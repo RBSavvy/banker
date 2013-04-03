@@ -6,27 +6,27 @@ module Banker
       super
       reset_test_state
     end
-  
+
     def reset_test_state
       @data = {}
       @written = {}
       @expired = {}
     end
-  
+
     def read(key, options = nil)
       @data[key] if key_written?(key)
     end
-  
+
     def write(key, value, options = nil)
       @data[key] = value
       @written[key] = Time.now
     end
-  
+
     def delete(key, options = nil)
       @data.delete(key)
       @expired[key] = Time.now
     end
-  
+
     def delete_matched(matcher, options = nil)
       @data.keys.grep(matcher).each { |key| delete(key) }
     end
@@ -34,11 +34,11 @@ module Banker
     def exist?(key, options = nil)
       key_written?(key)
     end
-  
+
     def key_written?(key)
       @written[key] && (!@expired[key] || (@written[key] > @expired[key]))
     end
-  
+
     def key_expired?(key)
       @expired[key] && (!@written[key] || (@expired[key] > @written[key]))
     end
@@ -56,7 +56,7 @@ module Banker
     module ClassMethods
       def expire_page(path)
         return unless perform_caching
-        logger.debug "Expired page: #{page_cache_file(path)}"
+        logger.debug "Expired page: #{page_cache_file(path,nil)}"
         pages_expired[path] = Time.now
       end
 
@@ -64,9 +64,9 @@ module Banker
         pages_expired.include?(path)
       end
 
-      def cache_page(content, path)
+      def cache_page(content, path, extension, gzip)
         return unless perform_caching
-        logger.debug "Cached page: #{page_cache_file(path)}"
+        logger.debug "Cached page: #{page_cache_file(path, extension)}"
         pages_cached[path] = Time.now
       end
 
